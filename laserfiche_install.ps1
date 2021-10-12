@@ -2,6 +2,9 @@
 
 $LFInstallerName = "LfWebOffice110.exe"
 $LFDownloadURI = "https://lfxstatic.com/dist/WA/latest/LfWebOffice110.exe"
+$LFOfficeVer = ""
+$LFWebtoolsVer = ""
+
 
 function Download-Laserfiche ($Path="") {
     ## Download LF installer
@@ -23,3 +26,4 @@ function Download-Laserfiche ($Path="") {
     $client= New-Object System.Net.WebClient
     $client.DownloadFile($DownloadURI, $tgtFilePath)
 }
+
