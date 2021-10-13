@@ -228,4 +228,19 @@ if ($LFInfo.Install_Webtools -or $LFInfo.Install_OfficeIntegration){
     Download-Laserfiche -Path $LFTempRoot
     Extract-Laserfiche -Installer "$LFTempRoot\$LFInstallerName" -Path $LFTempRoot
     Install-Laserfiche -InstallerRoot $LFTempRoot -LFreqs $LFInfo
+} elseif ($LFInfo.Upgrade_OfficeIntegration -or $LFInfo.Upgrade_Webtools){
+    Write-Host "Laserfiche is not current version.. Beginning Update process..."
+    if ($LFInfo.Upgrade_OfficeIntegration){
+        Write-Host "Current Laserfiche Office Integration version: $($LFInfo.Current_OfficeIntegration_Ver) [version $($LFInfo.Latest_OfficeIntegration_Ver) available]"
+    }
+    if ($LFInfo.Upgrade_Webtools){
+        Write-Host "Current Laserfiche Webtools Agent version: $($LFInfo.Current_WebtoolsAgent_Ver) [version $($LFInfo.Latest_WebtoolsAgent_Ver) available]"
+    }
+    Download-Laserfiche -Path $LFTempRoot
+    Extract-Laserfiche -Installer "$LFTempRoot\$LFInstallerName" -Path $LFTempRoot
+    Install-Laserfiche -InstallerRoot $LFTempRoot -LFreqs $LFInfo # TODO: Make sure that this updates an old version of Laserfiche
+} else {
+    Write-Host "Laserfiche appears to be installed and up-to-date"
+    Write-Host "Installed Laserfiche Office Integration version: $($LFInfo.Current_OfficeIntegration_Ver) [latest version $($LFInfo.Latest_OfficeIntegration_Ver)]"
+    Write-Host "Installed Laserfiche Webtools Agent version: $($LFInfo.Current_WebtoolsAgent_Ver) [latest version: $($LFInfo.Latest_WebtoolsAgent_Ver)]"
 }
