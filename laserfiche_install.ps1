@@ -3,7 +3,7 @@
 $LFInstallerName = "LfWebOffice110.exe"
 $LFDownloadURI = "https://lfxstatic.com/dist/WA/latest/LfWebOffice110.exe"
 $LFVersionURI = "https://raw.githubusercontent.com/Layer8Err/laserfiche_windows_client/dev/VER_GEN/current_version.json" # TODO: Change /dev/ to /main/ when ready
-
+$LFTempRoot = "$env:WINDIR/temp/LFInstaller"
 
 function Download-Laserfiche ($Path="") {
     ## Download LF installer
@@ -26,7 +26,7 @@ function Download-Laserfiche ($Path="") {
     $client.DownloadFile($DownloadURI, $tgtFilePath)
 }
 
-function Check-LFRequired ($Verbose=$true) {
+function Check-LFRequired ($Verbose=$false) {
     # Check if Laserfiche is installed and whether or not it is the current version
     $installedSoftware = ( Get-Package -Provider Programs -IncludeWindowsInstaller | Select-Object * )
     $versions = ConvertFrom-Json((Invoke-WebRequest $LFVersionURI).Content) # Get version info available on GitHub
@@ -45,7 +45,7 @@ function Check-LFRequired ($Verbose=$true) {
         "Install_Webtools" = $false
     }
     if ($LFOfficeVer -ne $CurrentLFOfficeVer){
-        if ($CurrentLFOfficeVer -eq 0){
+        if ($CurrentLFOfficeVer.Length -eq 0){
             if ($Verbose){
                 Write-Warning "Laserfiche Office Integration is not installed"
             }
@@ -54,7 +54,7 @@ function Check-LFRequired ($Verbose=$true) {
             if ($Verbose){
                 Write-Warning "Laserfiche Office Integration is version $CurrentLFOfficeVer, but version $LFOfficeVer exists"
             }
-            $LFReqs.Upgrade_OfficeIntegration = $false
+            $LFReqs.Upgrade_OfficeIntegration = $true
         }
     } else {
         if ($Verbose){
@@ -62,7 +62,7 @@ function Check-LFRequired ($Verbose=$true) {
         }
     }
     if ($LFOfficeVer -ne $CurrentLFOfficeVer){
-        if ($CurrentLFOfficeVer -eq 0){
+        if ($CurrentLFOfficeVer.Length -eq 0){
             if ($Verbose){
                 Write-Warning "Laserfiche Webtools Agent is not installed"
             }
@@ -126,19 +126,20 @@ function Install-Laserfiche () {
     # Install or Upgrade Laserfiche
     Param (
         [Parameter(Mandatory = $true)] [string]$InstallerRoot,
-        [ValidateNotNullOrEmpty()] $LFreqs = (Check-LFRequired -Verbose $false),
-        [ValidateNotNullOrEmpty()] [bool]$Verbose = $true
+        [ValidateNotNullOrEmpty()] $LFreqs
     )
     $installedSoftware = ( Get-Package -Provider Programs -IncludeWindowsInstaller | Select-Object * )
-    function Print-Verbose ($String) {
-        if ($Verbose){
-            Write-Host $String
-        }
-    }
 
-    function Wait-Msiexec () {
-        while ((Get-Process -Name msiexec -ErrorAction:SilentlyContinue).Length -ne 0){
+    function Wait-Msiexec ($MaxWait=300) {
+        $startTime = Get-Date
+        $forceEndTime = (Get-Date).AddSeconds($MaxWait)
+        while (((Get-Process -Name msiexec -ErrorAction:SilentlyContinue).Length -ne 0) -and ((Get-Date) -lt $forceEndTime)){
             Start-Sleep -Seconds 5 # Backoff 5 seconds if an installer is still running
+        }
+        if ((Get-Process -Name msiexec -ErrorAction:SilentlyContinue).Length -ne 0) {
+            # Assume that msiexec.exe is crashed/hung
+            Write-Warning "Waiting since $startTime, but MaxWait exceeded $MaxWait seconds. Terminating msiexec."
+            Stop-Process -Name msiexec -Force -ErrorAction:SilentlyContinue
         }
     }
     function Install-PreReqs () {
@@ -159,26 +160,26 @@ function Install-Laserfiche () {
             return $isInstalled
         }
         
-        Print-Verbose "Installing Laserfiche pre-requisites..."
+        Write-Host "Installing Laserfiche pre-requisites..."
         if (Test-Path "$InstallerRoot\Support\msxml6_x86.msi"){
-            Print-Verbose " * Installing MSXML 6.0 Parser (x86) SP1..."
+            Write-Host " * Installing MSXML 6.0 Parser (x86) SP1..."
             msiexec.exe /i ($InstallerRoot + "\Support\msxml6_x86.msi") /qn
         }
         if (Test-Path "$InstallerRoot\Support\msxml6_x64.msi"){
-            Print-Verbose " * Installing MSXML 6.0 Parser (x64) SP1..."
+            Write-Host " * Installing MSXML 6.0 Parser (x64) SP1..."
             Wait-Msiexec
             msiexec.exe /i ($InstallerRoot + "\Support\msxml6_x64.msi") /qn
         }
         if (!(Check-Installed -Name 'Microsoft Visual C++ 2015-2019 Redistributable (x86)*')){
-            Print-Verbose " * Installing Microsoft Visual C++ 2019 Redistributable (x86) - 14.28.29913.0..."
+            Write-Host " * Installing Microsoft Visual C++ 2019 Redistributable (x86) - 14.28.29913.0..."
             Start-Process -FilePath ($InstallerRoot + "\Support\MSVC2019\VC_redist.x86.exe") -ArgumentList "/install /quiet /norestart" -Wait
         }
         if (!(Check-Installed -Name 'Microsoft Visual C++ 2015-2019 Redistributable (x64)*')){
-            Print-Verbose " * Installing Microsoft Visual C++ 2019 Redistributable (x64) - 14.28.29913.0..."
+            Write-Host " * Installing Microsoft Visual C++ 2019 Redistributable (x64) - 14.28.29913.0..."
             Start-Process -FilePath ($InstallerRoot + "\Support\MSVC2019\VC_redist.x64.exe") -ArgumentList "/install /quiet /norestart" -Wait
         }
         if (!(Check-Installed -Name 'Microsoft Edge WebView2 Runtime')){
-            Print-Verbose " * Installing Microsoft Edge Web View 2 Runtime (x64)..."
+            Write-Host " * Installing Microsoft Edge Web View 2 Runtime (x64)..."
             Start-Process -FilePath ($InstallerRoot + "\Support\MicrosoftEdgeWebView2RuntimeInstallerX64.exe") -ArgumentList "/silent /install" -Wait
         }
     }
@@ -200,15 +201,29 @@ function Install-Laserfiche () {
             $killList | ForEach-Object {
                 Stop-Process -Name $_ -Force -ErrorAction:SilentlyContinue
             }
-            Print-Verbose "Installing Laserfiche from $installerPath"
+            Write-Host "Installing Laserfiche from $installerPath"
             $instWorkingDir = $InstallerRoot + '\ClientWeb'
             Start-Process -FilePath $installerPath -ArgumentList $instArgs -WorkingDirectory $instWorkingDir -NoNewWindow -Wait
         } else {
             Write-Error "SetupLf.exe could not be found at $installerPath"
         }
-        
     }
     Install-PreReqs
     Wait-Msiexec # Wait for any running install processes to finish
     Install-SetupLf
+}
+
+$LFInfo = Check-LFRequired
+
+if ($LFInfo.Install_Webtools -or $LFInfo.Install_OfficeIntegration){
+    Write-Host "Laserfiche is not installed... Beginning Install process..."
+    if (Test-Path $LFTempRoot){
+        Remove-Item -Recurse -Path $LFTempRoot -Force
+        New-Item -Path $LFTempRoot -ItemType Directory | Out-Null
+    } else {
+        New-Item -Path $LFTempRoot -ItemType Directory | Out-Null
+    }
+    Download-Laserfiche -Path $LFTempRoot
+    Extract-Laserfiche -Installer "$LFTempRoot\$LFInstallerName" -Path $LFTempRoot
+    Install-Laserfiche -InstallerRoot $LFTempRoot -LFreqs $LFInfo
 }
