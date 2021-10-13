@@ -3,7 +3,7 @@
 $LFInstallerName = "LfWebOffice110.exe"
 $LFDownloadURI = "https://lfxstatic.com/dist/WA/latest/LfWebOffice110.exe"
 $LFVersionURI = "https://raw.githubusercontent.com/Layer8Err/laserfiche_windows_client/dev/VER_GEN/current_version.json" # TODO: Change /dev/ to /main/ when ready
-$LFTempRoot = "$env:WINDIR/temp/LFInstaller"
+$LFTempRoot = "$env:WINDIR\temp\LFInstaller"
 
 function Download-Laserfiche ($Path="") {
     ## Download LF installer
@@ -160,7 +160,6 @@ function Install-Laserfiche () {
             return $isInstalled
         }
         
-        Write-Host "Installing Laserfiche pre-requisites..."
         # MSXML 6.0 should be in $env:WINDIR\System32\Msxml6.dll
         # if (Test-Path "$InstallerRoot\Support\msxml6_x86.msi"){
         #     Write-Host " * Installing MSXML 6.0 Parser (x86) SP1..."
@@ -204,13 +203,13 @@ function Install-Laserfiche () {
             $killList | ForEach-Object {
                 Stop-Process -Name $_ -Force -ErrorAction:SilentlyContinue
             }
-            Write-Host "Installing Laserfiche from $installerPath"
             $instWorkingDir = $InstallerRoot + '\ClientWeb'
             Start-Process -FilePath $installerPath -ArgumentList $instArgs -WorkingDirectory $instWorkingDir -NoNewWindow -Wait
         } else {
             Write-Error "SetupLf.exe could not be found at $installerPath"
         }
     }
+    Write-Host "Installing Laserfiche..."
     Install-PreReqs
     Wait-Msiexec # Wait for any running install processes to finish
     Install-SetupLf
