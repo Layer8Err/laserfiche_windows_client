@@ -138,8 +138,8 @@ function Install-Laserfiche () {
         }
         if ((Get-Process -Name msiexec -ErrorAction:SilentlyContinue).Length -ne 0) {
             # Assume that msiexec.exe is crashed/hung
-            Write-Warning "Waiting since $startTime, but MaxWait exceeded $MaxWait seconds. Terminating msiexec."
-            Stop-Process -Name msiexec -Force -ErrorAction:SilentlyContinue
+            # Write-Warning "Waiting since $startTime, but MaxWait exceeded $MaxWait seconds. Terminating msiexec."
+            Get-Process -Name msiexec | Stop-Process -Force
         }
     }
     function Install-PreReqs () {
@@ -161,14 +161,17 @@ function Install-Laserfiche () {
         }
         
         Write-Host "Installing Laserfiche pre-requisites..."
-        if (Test-Path "$InstallerRoot\Support\msxml6_x86.msi"){
-            Write-Host " * Installing MSXML 6.0 Parser (x86) SP1..."
-            msiexec.exe /i ($InstallerRoot + "\Support\msxml6_x86.msi") /qn
-        }
+        # MSXML 6.0 should be in $env:WINDIR\System32\Msxml6.dll
+        # if (Test-Path "$InstallerRoot\Support\msxml6_x86.msi"){
+        #     Write-Host " * Installing MSXML 6.0 Parser (x86) SP1..."
+        #     msiexec.exe /i ($InstallerRoot + "\Support\msxml6_x86.msi") /qn
+        # }
         if (Test-Path "$InstallerRoot\Support\msxml6_x64.msi"){
-            Write-Host " * Installing MSXML 6.0 Parser (x64) SP1..."
-            Wait-Msiexec
-            msiexec.exe /i ($InstallerRoot + "\Support\msxml6_x64.msi") /qn
+            if (!(Test-Path "$env:WINDIR\System32\msxml6.dll")){
+                Write-Host " * Installing MSXML 6.0 Parser (x64) SP1..."
+                Wait-Msiexec -MaxWait 5
+                msiexec.exe /i ($InstallerRoot + "\Support\msxml6_x64.msi") /qn
+            }
         }
         if (!(Check-Installed -Name 'Microsoft Visual C++ 2015-2019 Redistributable (x86)*')){
             Write-Host " * Installing Microsoft Visual C++ 2019 Redistributable (x86) - 14.28.29913.0..."
