@@ -119,7 +119,7 @@ function Extract-Laserfiche () {
         return $sz
     }
     $sz = Get-7ZipPath
-    Start-Process -FilePath $sz -ArgumentList "x -o`"$Path`" $Installer" -NoNewWindow -Wait
+    Start-Process -FilePath $sz -ArgumentList "x -aoa -o`"$Path`" $Installer" -NoNewWindow -Wait
 }
 
 function Install-Laserfiche () {
