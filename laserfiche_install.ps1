@@ -278,30 +278,6 @@ function Update-Laserfiche () {
             Start-Process -FilePath ($InstallerRoot + "\Support\MicrosoftEdgeWebView2RuntimeInstallerX64.exe") -ArgumentList "/silent /install" -Wait
         }
     }
-    function Install-SetupLf () {
-        # Use SetupLf.exe to install Laserfiche
-        $logFolder = $InstallerRoot + "\LFInstall_Log"
-        $instArgs = "/silent /-noui /-iacceptlicenseagreement -log $logFolder INSTALLLEVEL=300"
-        $killList = @(
-            'Laserfiche.OfficeMonitor',
-            'Laserfiche Webtools Agent',
-            'SetupLf',
-            'msiexec',
-            'EXCEL',
-            'WINWORD',
-            'POWERPNT'
-        ) # Programs that cannot be running while installing Laserfiche
-        $installerPath = $InstallerRoot + "\ClientWeb\SetupLf.exe"
-        if (Test-Path $installerPath){
-            $killList | ForEach-Object {
-                Stop-Process -Name $_ -Force -ErrorAction:SilentlyContinue
-            }
-            $instWorkingDir = $InstallerRoot + '\ClientWeb'
-            Start-Process -FilePath $installerPath -ArgumentList $instArgs -WorkingDirectory $instWorkingDir -NoNewWindow -Wait
-        } else {
-            Write-Error "SetupLf.exe could not be found at $installerPath"
-        }
-    }
     function Update-Lf () {
         # Use lfoffice-x64_en.msi and lfwebtools.msi to update an existing Laserfiche install
         $killList = @(
@@ -316,19 +292,24 @@ function Update-Laserfiche () {
         $lfoffice = $InstallerRoot + "\ClientWeb\lfoffice-x64_en.msi"
         $lfwebtools = $InstallerRoot + "\ClientWeb\lfwebtools.msi"
         if ((Test-Path $lfoffice) -and (Test-Path $lfwebtools)){
+            $killList | ForEach-Object {
+                Stop-Process -Name $_ -Force -ErrorAction:SilentlyContinue
+            }
             $lfofficeArgs = 'REBOOT=ReallySuppress INSTALLDIR="' + $env:ProgramFiles + '\Laserfiche\Client\" INSTALLDIR32="' + ${env:ProgramFiles(x86)} + '\Laserfiche\Client\" ADDLOCAL="LFOffice" REINSTALL=ALL REINSTALLMODE=vomus'
             $lfwebtoolsArgs = 'REBOOT=ReallySuppress INSTALLDIR="' + ${env:ProgramFiles(x86)} + '\Laserfiche\Webtools Agent\" ADDLOCAL="LFWebtools" REINSTALL=ALL REINSTALLMODE=vomus'
-            msiexec.exe /i $lfoffice /qn $lfofficeArgs
+            $lfofficeInst = "/qn /i $lfoffice $lfofficeArgs"
+            $lfwebtoolsInst = "/qn /i $lfwebtools $lfwebtoolsArgs"
+            # msiexec.exe /qn /i $lfoffice $lfofficeArgs
+            Start-Process msiexec.exe -WorkingDirectory ($InstallerRoot + "\ClientWeb") -ArgumentList $lfofficeInst -Wait
             Wait-Msiexec
-            msiexec.exe /i $lfwebtools /qn $lfwebtoolsArgs
+            Start-Process msiexec.exe -WorkingDirectory ($InstallerRoot + "\ClientWeb") -ArgumentList $lfwebtoolsInst -Wait
         } else {
             Write-Error "Could not find files required to update Laserfiche"
         }
     }
-    Write-Host "Installing Laserfiche..."
+    Write-Host "Updating Laserfiche..."
     Install-PreReqs
     Wait-Msiexec # Wait for any running install processes to finish
-    # Install-SetupLf
     Update-Lf
 }
 
