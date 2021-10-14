@@ -2,7 +2,7 @@
 
 $LFInstallerName = "LfWebOffice110.exe"
 $LFDownloadURI = "https://lfxstatic.com/dist/WA/latest/LfWebOffice110.exe"
-$LFVersionURI = "https://raw.githubusercontent.com/Layer8Err/laserfiche_windows_client/dev/VER_GEN/current_version.json" # TODO: Change /dev/ to /main/ when ready
+$LFVersionURI = "https://raw.githubusercontent.com/Layer8Err/laserfiche_windows_client/main/VER_GEN/current_version.json"
 $LFTempRoot = "$env:WINDIR\temp\LFInstaller"
 
 function Download-Laserfiche ($Path="") {
