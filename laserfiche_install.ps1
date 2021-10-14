@@ -300,14 +300,16 @@ function Update-Laserfiche () {
             $lfofficeInst = "/qn /i $lfoffice $lfofficeArgs"
             $lfwebtoolsInst = "/qn /i $lfwebtools $lfwebtoolsArgs"
             # msiexec.exe /qn /i $lfoffice $lfofficeArgs
+            Write-Host " * Updating Laserfiche Office Integration..."
             Start-Process msiexec.exe -WorkingDirectory ($InstallerRoot + "\ClientWeb") -ArgumentList $lfofficeInst -Wait
             Wait-Msiexec
+            Write-Host " * Updating Laserfiche Webtools Agent..."
             Start-Process msiexec.exe -WorkingDirectory ($InstallerRoot + "\ClientWeb") -ArgumentList $lfwebtoolsInst -Wait
         } else {
             Write-Error "Could not find files required to update Laserfiche"
         }
     }
-    Write-Host "Updating Laserfiche..."
+    Write-Host "Updating Laserfiche..." -ForegroundColor Cyan
     Install-PreReqs
     Wait-Msiexec # Wait for any running install processes to finish
     Update-Lf
@@ -316,35 +318,43 @@ function Update-Laserfiche () {
 $LFInfo = Check-LFRequired
 
 if ($LFInfo.Install_Webtools -or $LFInfo.Install_OfficeIntegration){
-    Write-Host "Laserfiche is not installed... Beginning Install process..."
+    Write-Host "Laserfiche is not installed... Beginning Install process..." -ForegroundColor Yellow
     if (Test-Path $LFTempRoot){
         Remove-Item -Recurse -Path $LFTempRoot -Force -ErrorAction:SilentlyContinue
-        New-Item -Path $LFTempRoot -ItemType Directory | Out-Null
+        if (!(Test-Path $LFTempRoot)){
+            New-Item -Path $LFTempRoot -ItemType Directory | Out-Null
+        }
     } else {
         New-Item -Path $LFTempRoot -ItemType Directory | Out-Null
     }
+    Write-Host "Downloading latest Laserfiche Office Installer..." -ForegroundColor Cyan
     Download-Laserfiche -Path $LFTempRoot
+    Write-Host "Extracting Laserfiche Office Installer for silent install..." -ForegroundColor Cyan
     Extract-Laserfiche -Installer "$LFTempRoot\$LFInstallerName" -Path $LFTempRoot
     Install-Laserfiche -InstallerRoot $LFTempRoot -LFreqs $LFInfo
 } elseif ($LFInfo.Upgrade_OfficeIntegration -or $LFInfo.Upgrade_Webtools){
-    Write-Host "Laserfiche is not current version.. Beginning Update process..."
+    Write-Host "Laserfiche is not current version.. Beginning Update process..." -ForegroundColor Yellow
     if (Test-Path $LFTempRoot){
         Remove-Item -Recurse -Path $LFTempRoot -Force -ErrorAction:SilentlyContinue
-        New-Item -Path $LFTempRoot -ItemType Directory | Out-Null
+        if (!(Test-Path $LFTempRoot)){
+            New-Item -Path $LFTempRoot -ItemType Directory | Out-Null
+        }
     } else {
         New-Item -Path $LFTempRoot -ItemType Directory | Out-Null
     }
     if ($LFInfo.Upgrade_OfficeIntegration){
-        Write-Host "Current Laserfiche Office Integration version: $($LFInfo.Current_OfficeIntegration_Ver) [version $($LFInfo.Latest_OfficeIntegration_Ver) available]"
+        Write-Host "Current Laserfiche Office Integration version: $($LFInfo.Current_OfficeIntegration_Ver) [version $($LFInfo.Latest_OfficeIntegration_Ver) available]" -ForegroundColor White
     }
     if ($LFInfo.Upgrade_Webtools){
-        Write-Host "Current Laserfiche Webtools Agent version: $($LFInfo.Current_WebtoolsAgent_Ver) [version $($LFInfo.Latest_WebtoolsAgent_Ver) available]"
+        Write-Host "Current Laserfiche Webtools Agent version: $($LFInfo.Current_WebtoolsAgent_Ver) [version $($LFInfo.Latest_WebtoolsAgent_Ver) available]" -ForegroundColor White
     }
+    Write-Host "Downloading latest Laserfiche Office Installer..." -ForegroundColor Cyan
     Download-Laserfiche -Path $LFTempRoot
+    Write-Host "Extracting Laserfiche Office Installer for silent install..." -ForegroundColor Cyan
     Extract-Laserfiche -Installer "$LFTempRoot\$LFInstallerName" -Path $LFTempRoot
     Update-Laserfiche -InstallerRoot $LFTempRoot -LFreqs $LFInfo
 } else {
-    Write-Host "Laserfiche appears to be installed and up-to-date"
-    Write-Host "Installed Laserfiche Office Integration version: $($LFInfo.Current_OfficeIntegration_Ver) [latest version $($LFInfo.Latest_OfficeIntegration_Ver)]"
-    Write-Host "Installed Laserfiche Webtools Agent version: $($LFInfo.Current_WebtoolsAgent_Ver) [latest version: $($LFInfo.Latest_WebtoolsAgent_Ver)]"
+    Write-Host "Laserfiche appears to be installed and up-to-date" -ForegroundColor Green
+    Write-Host " * Installed Laserfiche Office Integration version: $($LFInfo.Current_OfficeIntegration_Ver) [latest version $($LFInfo.Latest_OfficeIntegration_Ver)]" -ForegroundColor Cyan
+    Write-Host " * Installed Laserfiche Webtools Agent version: $($LFInfo.Current_WebtoolsAgent_Ver) [latest version: $($LFInfo.Latest_WebtoolsAgent_Ver)]" -ForegroundColor Cyan
 }
