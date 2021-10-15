@@ -49,12 +49,16 @@ if [[ -f "${LFOfficeInstallerPath}" ]]; then
     echo "Downloading latest Laserfiche installer..."
     DownloadLF
 else
+    echo "------------------------------------------"
     echo "Downloading latest Laserfiche installer..."
     DownloadLF
 fi
 
 if [[ -f "${LFOfficeInstallerPath}" ]]; then
+    echo "------------------------------------------"
+    echo "Extracting Laserfiche Installer..."
     7zz x ${LFOfficeInstallerPath} -o${WORKINGDIR}/LfWebOffice
+    sleep 5s
 fi
 # 7zr x ${CWD}/LfWebOffice110.exe -r -y -aoa -o${CWD}/LfWebOffice
 # docker run -it -v /mnt/c/temp/dev/tmp:/data crazymax/7zip /bin/sh << won't work, we need 7zz not p7zip
@@ -62,31 +66,41 @@ fi
 #####
 # Get Laserfiche file versions from MSI installers
 if [[ -d "${WORKINGDIR}/LfWebOffice/ClientWeb" ]]; then
+    echo "------------------------------------------"
+    echo "Analyzing Laserfiche Installer..."
     cd ${WORKINGDIR}/LfWebOffice/ClientWeb
 
     # Get Laserfiche Office Integration version
+    echo " * Analyzing lfoffice-x64_en.msi..."
     LFOfficeLongVer=$( strings lfoffice-x64_en.msi | grep "Laserfiche Office Integration 11" | head -n 1 )
+    echo -n " * Detected: ${LFOfficeLongVer}"
     LFOfficeMainVer=$( echo $LFOfficeLongVer | awk -F 'Laserfiche Office Integration' '{print $2}' | awk -F ' build ' '{print $1}' )
     LFOfficeBuildVer=$( echo $LFOfficeLongVer | awk -F 'Laserfiche Office Integration' '{print $2}' | awk -F ' build ' '{print $2}' )
     LFOfficeVer=$( echo "${LFOfficeMainVer}.${LFOfficeBuildVer}" | xargs )
+    echo " version: ${LFOfficeVer}"
 
     # Get Laserfiche Webtools Agent version
+    echo " * Analyzing lfwebtools.msi..."
     LFWebtoolsVer=$( strings lfwebtools.msi | grep "Laserfiche Webtools Agent.exe" | grep "PluginContainerExe" | grep "Laserfiche Webtools Agent.exe" | awk -F 'Laserfiche Webtools Agent.exe' '{print $2}' | awk -F 'PluginContainerExeFile' '{print $1}' | xargs )
-
+    echo " * Detected version: ${LFWebtoolsVer}"
     #####
     # Build current_version.json with version info
     echo -n '{"Laserfiche Office Integration":"'${LFOfficeVer}'","Laserfiche Webtools Agent":"'${LFWebtoolsVer}'"}' > ${WORKINGDIR}/current_version.json
 else
-    echo "ERROR: No extracted Laserfiche files detected"
+    echo "+-----------------------------------------------+"
+    echo "| ERROR: No extracted Laserfiche files detected |"
+    echo "+-----------------------------------------------+"
 fi
 
 #####
 # Cleanup leftover download file
 if [[ -f "${LFOfficeInstallerPath}" ]]; then
+    echo "------------------------------------------"
     echo "Removing ${LFOfficeInstallerPath}..."
     rm ${LFOfficeInstallerPath}
 fi
 if [[ -d "${WORKINGDIR}/LfWebOffice" ]]; then
+    echo "------------------------------------------"
     echo "Removing leftover extracted files..."
     rm -r "${WORKINGDIR}/LfWebOffice"
 fi
