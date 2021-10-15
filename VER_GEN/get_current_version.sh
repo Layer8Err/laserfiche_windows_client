@@ -15,9 +15,11 @@ Install7Zip() {
         echo "7-Zip has already been installed"
     else
         echo "Installing 7-Zip..."
-        wget -c ${DLURI}
-        tar -xvf 7z2103-linux-x64.tar.xz
-        sudo cp 7zz /usr/bin/.
+        curl -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.81 Safari/537.36 Edg/94.0.992.47" \
+            -o /tmp/7z2103-linux-x64.tar.xz ${DLURI}
+        cd /tmp
+        tar -xvf /tmp/7z2103-linux-x64.tar.xz -C /tmp
+        sudo cp /tmp/7zz /usr/bin/.
         sudo chmod +x /usr/bin/7zz
     fi
 }
@@ -26,6 +28,13 @@ DownloadLF() {
     curl -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.81 Safari/537.36 Edg/94.0.992.47" \
         -o ${LFOfficeInstallerPath} ${LFDownloadURI}
 }
+
+if [[ -f "/usr/bin/7zz" ]]; then
+    echo "Found 7-Zip!"
+else
+    echo "7-Zip is not installed. Downloading and Installing..."
+    Install7Zip
+fi
 
 if [[ -d "${WORKINGDIR}/LfWebOffice" ]]; then
     echo "${WORKINGDIR}/LfWebOffice already exists"
