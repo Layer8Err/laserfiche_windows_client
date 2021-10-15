@@ -18,3 +18,9 @@ jobs:
     - name: Checkout this repo
       run: cd $GITHUB_WORKSPACE && ls
       
+    - name: Analyze Laserfiche Installer
+      run: cd $GITHUB_WORKSPACE/VER_GEN && bash get_current_version.sh
+
+    - name: Show results
+      run: cd $GITHUB_WORKSPACE/VER_GEN && cat current_version.json
+      
