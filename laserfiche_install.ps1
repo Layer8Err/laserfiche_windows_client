@@ -29,7 +29,7 @@ function Download-Laserfiche ($Path="") {
 function Check-LFRequired ($Verbose=$false) {
     # Check if Laserfiche is installed and whether or not it is the current version
     $installedSoftware = ( Get-Package -Provider Programs -IncludeWindowsInstaller | Select-Object * )
-    $versions = ConvertFrom-Json((Invoke-WebRequest $LFVersionURI).Content) # Get version info available on GitHub
+    $versions = ConvertFrom-Json((New-Object System.Net.WebClient).DownloadString($LFVersionURI)) # Get version info available on GitHub
     $LFOfficeVer = $versions."Laserfiche Office Integration"
     $LFWebtoolsVer = $versions."Laserfiche Webtools Agent"
     $CurrentLFOfficeVer = ($installedSoftware | Where-Object Name -Match "Laserfiche Office Integration").Version
