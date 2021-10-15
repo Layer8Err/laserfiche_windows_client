@@ -17,8 +17,11 @@ for silent updates or install. If this program does allow for silent updates/ins
 In order to keep the Laserfiche client components up-to-date we need to accomplish the following tasks:
 
 * Determine the currently installed version of Laserfiche
+  * PowerShell script handles version detection
 * Determine the latest available version of Laserfiche
+  * GitHub action updates the `current_version.json` file on a weekdaily schedule
 * Update or install to make sure that the installed version remains current.
+  * The PowerShell script only updates/installs if a different version is detected.
 
 # Clone
 You can clone this repo with the command:
