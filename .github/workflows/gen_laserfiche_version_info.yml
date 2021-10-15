@@ -14,8 +14,7 @@ jobs:
 
     steps:
 
+    - uses: actions/checkout@v2
     - name: Checkout this repo
-      uses: actions/checkout@v2
-      run: docker run -v /VER_GEN:/tmp ubuntu ./tmp/get_current_version.sh
-
-
+      run: cd $GITHUB_WORKSPACE && ls
+      
