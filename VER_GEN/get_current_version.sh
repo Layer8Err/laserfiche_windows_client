@@ -73,18 +73,19 @@ if [[ -d "${WORKINGDIR}/LfWebOffice/ClientWeb" ]]; then
     # Get Laserfiche Office Integration version
     echo " * Analyzing lfoffice-x64_en.msi..."
     LFOfficeLongVer=$( strings lfoffice-x64_en.msi | grep "Laserfiche Office Integration 11" | head -n 1 )
-    echo -n " * Detected: ${LFOfficeLongVer}"
     LFOfficeMainVer=$( echo $LFOfficeLongVer | awk -F 'Laserfiche Office Integration' '{print $2}' | awk -F ' build ' '{print $1}' )
     LFOfficeBuildVer=$( echo $LFOfficeLongVer | awk -F 'Laserfiche Office Integration' '{print $2}' | awk -F ' build ' '{print $2}' )
     LFOfficeVer=$( echo "${LFOfficeMainVer}.${LFOfficeBuildVer}" | xargs )
-    echo " version: ${LFOfficeVer}"
+    echo "  - Detected Laserfiche Office Integration version: ${LFOfficeVer}"
 
     # Get Laserfiche Webtools Agent version
     echo " * Analyzing lfwebtools.msi..."
     LFWebtoolsVer=$( strings lfwebtools.msi | grep "Laserfiche Webtools Agent.exe" | grep "PluginContainerExe" | grep "Laserfiche Webtools Agent.exe" | awk -F 'Laserfiche Webtools Agent.exe' '{print $2}' | awk -F 'PluginContainerExeFile' '{print $1}' | xargs )
-    echo " * Detected version: ${LFWebtoolsVer}"
+    echo "  - Detected Laserfiche Webtools Agent version: ${LFWebtoolsVer}"
     #####
     # Build current_version.json with version info
+    echo "------------------------------------------"
+    echo "Exporting analysis results to current_version.json..."
     echo -n '{"Laserfiche Office Integration":"'${LFOfficeVer}'","Laserfiche Webtools Agent":"'${LFWebtoolsVer}'"}' > ${WORKINGDIR}/current_version.json
 else
     echo "+-----------------------------------------------+"

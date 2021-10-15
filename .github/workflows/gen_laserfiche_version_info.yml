@@ -21,6 +21,11 @@ jobs:
     - name: Analyze Laserfiche Installer
       run: cd $GITHUB_WORKSPACE/VER_GEN && bash get_current_version.sh
 
-    - name: Show results
+    - name: Show Version Info
       run: cd $GITHUB_WORKSPACE/VER_GEN && cat current_version.json
-      
+
+    - name: Commit Version updates to main
+      run: git config --global user.email ${GH_EMAIL} && git config --global user.name ${GH_USER} && git add -f $GITHUB_WORKSPACE/VER_GEN/current_version.json && git commit -m "GitHub action updated current_version.json info" && git push
+      env:
+        GH_EMAIL: ${{ secrets.GH_EMAIL }}
+        GH_USER: ${{ secrets.GH_USER }}
