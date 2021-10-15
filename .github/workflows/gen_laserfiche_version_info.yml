@@ -1,5 +1,11 @@
 name: Docker Generate LF-Versions
 
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
 jobs:
 
   build:
@@ -8,10 +14,8 @@ jobs:
 
     steps:
 
-    - name: Download LfWebOffice110.exe
-      run: wget -c "https://lfxstatic.com/dist/WA/latest/LfWebOffice110.exe" -o $GITHUB_WORKSPACE/VER_GEN/LfWebOffice110.exe
+    - name: Checkout this repo
+      uses: actions/checkout@v2
+      run: docker run -v /VER_GEN:/tmp ubuntu ./tmp/get_current_version.sh
 
-    - uses: actions/checkout@v2
-    - name: Download Laserfiche Client
-      run: docker run --workdir /data -v /VER_GEN:/data crazymax/7zip 7za x LfWebOffice110.exe
 
