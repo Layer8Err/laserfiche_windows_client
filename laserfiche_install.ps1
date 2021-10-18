@@ -331,14 +331,15 @@ function Remove-Software ($Name) {
                     if ($UninstallString.ToLower() -match "/i{"){
                         $UninstallString = $UninstallString.Replace("/I{", "/X{")
                         $UninstallString = $UninstallString.Replace("/i{", "/X{")
-                        $UninstallString += " /qn /norestart"
                     }
                     $UninstallArgs = $UninstallString.Replace("msiexec.exe ", "")
                     $UninstallArgs = $UninstallArgs.Replace("MsiExec.exe ", "")
+                    $UninstallArgs += " /qn /norestart"
                     if ((Get-Process -Name msiexec -ErrorAction:SilentlyContinue).Length -gt 0){
                         Stop-Process -Name msiexec -Force # Force kill any running (hung?) msiexec processes
                     }
-                    Write-Warning "Beginning MsiExec uninstall of $Name..."
+                    Write-Host "Beginning MsiExec uninstall of $Name..." -ForegroundColor Cyan
+                    Write-Host "  msiexec.exe $UninstallArgs" -ForegroundColor White
                     Start-Process "msiexec.exe" -arg "$UninstallArgs" -Wait
                     Start-Sleep -Seconds 5
                 } else {
@@ -389,9 +390,9 @@ if ($LFInfo.Install_Webtools -or $LFInfo.Install_OfficeIntegration){
 } elseif ($LFInfo.Upgrade_OfficeIntegration -or $LFInfo.Upgrade_Webtools){
     Write-Host "Laserfiche is not current version.. Beginning Update process..." -ForegroundColor Yellow
     $inPlaceUpgrade = $true
-    $MajorVersion = $LFInfo.Latest_OfficeIntegration_Ver.Split('.')[0]
-    $CurentMajorVersion = $LFInfo.Current_OfficeIntegration_Ver.Split('.')[0]
-    if ($MajorVersion -ne $CurentMajorVersion){ $inPlaceUpgrade = $false }
+    $LFOMajorVersion = $LFInfo.Latest_OfficeIntegration_Ver.Split('.')[0]
+    $LFOCurentMajorVersion = $LFInfo.Current_OfficeIntegration_Ver.Split('.')[0]
+    if ($LFOMajorVersion -ne $LFOCurentMajorVersion){ $inPlaceUpgrade = $false }
     if ($inPlaceUpgrade) {
         if (Test-Path $LFTempRoot){
         Remove-Item -Recurse -Path $LFTempRoot -Force -ErrorAction:SilentlyContinue
@@ -414,7 +415,7 @@ if ($LFInfo.Install_Webtools -or $LFInfo.Install_OfficeIntegration){
         Update-Laserfiche -InstallerRoot $LFTempRoot -LFreqs $LFInfo
     } else {
         Write-Warning "Current Laserfiche version is too old for upgrade... Beginning clean install..."
-        Write-Host "Uninstalling Laserfiche Office components..." -ForegroundColor Cyan
+        Write-Host "Uninstalling old Laserfiche Office components..." -ForegroundColor Cyan
         Uninstall-Laserfiche
         While ((Get-Process -Name msiexec -ErrorAction:SilentlyContinue).Length -gt 0){
             Start-Sleep -Seconds 10 # Backoff while waiting for msiexec processes to finish
