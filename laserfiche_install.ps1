@@ -190,6 +190,7 @@ function Install-Laserfiche () {
         $logFolder = $InstallerRoot + "\LFInstall_Log"
         $instArgs = "/silent /-noui /-iacceptlicenseagreement -log $logFolder INSTALLLEVEL=300"
         $killList = @(
+            'ChromeNativeMessaging',
             'Laserfiche.OfficeMonitor',
             'Laserfiche Webtools Agent',
             'SetupLf',
@@ -281,6 +282,7 @@ function Update-Laserfiche () {
     function Update-Lf () {
         # Use lfoffice-x64_en.msi and lfwebtools.msi to update an existing Laserfiche install
         $killList = @(
+            'ChromeNativeMessaging',
             'Laserfiche.OfficeMonitor',
             'Laserfiche Webtools Agent',
             'SetupLf',
@@ -313,6 +315,58 @@ function Update-Laserfiche () {
     Install-PreReqs
     Wait-Msiexec # Wait for any running install processes to finish
     Update-Lf
+}
+
+function Remove-Software ($Name) {
+    # $installedPrograms = Get-CimInstance Win32_Product
+    $installedSoftware = ( Get-Package -Provider Programs -IncludeWindowsInstaller | Select-Object * )
+    $targetForRemoval = $installedSoftware | Where-Object Name -match $Name
+    if ($targetForRemoval.Length -ne 0) {
+        $targetForRemoval | ForEach-Object {
+            $xmlTxt = $_.SwidTagText
+            [xml]$xml = $xmlTxt
+            $UninstallString = $xml.SoftwareIdentity.Meta.UninstallString
+            if ($UninstallString -ne $Null) {
+                if ($UninstallString.ToLower() -match "msiexec") {
+                    if ($UninstallString.ToLower() -match "/i{"){
+                        $UninstallString = $UninstallString.Replace("/I{", "/X{")
+                        $UninstallString = $UninstallString.Replace("/i{", "/X{")
+                        $UninstallString += " /qn /norestart"
+                    }
+                    $UninstallArgs = $UninstallString.Replace("msiexec.exe ", "")
+                    $UninstallArgs = $UninstallArgs.Replace("MsiExec.exe ", "")
+                    if ((Get-Process -Name msiexec -ErrorAction:SilentlyContinue).Length -gt 0){
+                        Stop-Process -Name msiexec -Force # Force kill any running (hung?) msiexec processes
+                    }
+                    Write-Warning "Beginning MsiExec uninstall of $Name..."
+                    Start-Process "msiexec.exe" -arg "$UninstallArgs" -Wait
+                    Start-Sleep -Seconds 5
+                } else {
+                    Write-Warning "Unknown uninstall method required for uninstall string:"
+                    Write-Host "$UninstallString" -ForegroundColor Red
+                }
+                if ($UninstallString.ToLower() -match "msiexec") {
+                    While ((Get-Process -Name msiexec -ErrorAction:SilentlyContinue).Length -gt 0){
+                        Start-Sleep -Seconds 5
+                    }
+                }
+            } else {
+                Write-Host $_.SwidTagText
+                Write-Host $UninstallString
+            }
+        }
+    } else {
+        Write-Warning "Existing $Name install not found."
+    }
+}
+
+function Uninstall-Laserfiche () {
+    Remove-Software -Name "Laserfiche Webtools Agent"
+    Start-Sleep -Seconds 10
+    While ((Get-Process -Name msiexec -ErrorAction:SilentlyContinue).Length -gt 0){
+        Start-Sleep -Seconds 10 # Backoff while waiting for "Laserfiche Webtools Agent 10" to uninstall
+    }
+    Remove-Software -Name "Laserfiche Office Integration"
 }
 
 $LFInfo = Check-LFRequired
