@@ -210,7 +210,7 @@ function Install-Laserfiche () {
             Write-Error "SetupLf.exe could not be found at $installerPath"
         }
     }
-    Write-Host "Installing Laserfiche..."
+    Write-Host "Installing Laserfiche..." -ForegroundColor Cyan
     Install-PreReqs
     Wait-Msiexec # Wait for any running install processes to finish
     Install-SetupLf
