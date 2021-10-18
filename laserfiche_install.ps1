@@ -167,21 +167,21 @@ function Install-Laserfiche () {
         # }
         if (Test-Path "$InstallerRoot\Support\msxml6_x64.msi"){
             if (!(Test-Path "$env:WINDIR\System32\msxml6.dll")){
-                Write-Host " * Installing MSXML 6.0 Parser (x64) SP1..."
+                Write-Host " * Installing MSXML 6.0 Parser (x64) SP1..." -ForegroundColor Cyan
                 Wait-Msiexec -MaxWait 5
                 msiexec.exe /i ($InstallerRoot + "\Support\msxml6_x64.msi") /qn
             }
         }
         if (!(Check-Installed -Name 'Microsoft Visual C++ 2015-2019 Redistributable (x86)*')){
-            Write-Host " * Installing Microsoft Visual C++ 2019 Redistributable (x86) - 14.28.29913.0..."
+            Write-Host " * Installing Microsoft Visual C++ 2019 Redistributable (x86) - 14.28.29913.0..." -ForegroundColor Cyan
             Start-Process -FilePath ($InstallerRoot + "\Support\MSVC2019\VC_redist.x86.exe") -ArgumentList "/install /quiet /norestart" -Wait
         }
         if (!(Check-Installed -Name 'Microsoft Visual C++ 2015-2019 Redistributable (x64)*')){
-            Write-Host " * Installing Microsoft Visual C++ 2019 Redistributable (x64) - 14.28.29913.0..."
+            Write-Host " * Installing Microsoft Visual C++ 2019 Redistributable (x64) - 14.28.29913.0..." -ForegroundColor Cyan
             Start-Process -FilePath ($InstallerRoot + "\Support\MSVC2019\VC_redist.x64.exe") -ArgumentList "/install /quiet /norestart" -Wait
         }
         if (!(Check-Installed -Name 'Microsoft Edge WebView2 Runtime')){
-            Write-Host " * Installing Microsoft Edge Web View 2 Runtime (x64)..."
+            Write-Host " * Installing Microsoft Edge Web View 2 Runtime (x64)..." -ForegroundColor Cyan
             Start-Process -FilePath ($InstallerRoot + "\Support\MicrosoftEdgeWebView2RuntimeInstallerX64.exe") -ArgumentList "/silent /install" -Wait
         }
     }
@@ -261,21 +261,21 @@ function Update-Laserfiche () {
         # }
         if (Test-Path "$InstallerRoot\Support\msxml6_x64.msi"){
             if (!(Test-Path "$env:WINDIR\System32\msxml6.dll")){
-                Write-Host " * Installing MSXML 6.0 Parser (x64) SP1..."
+                Write-Host " * Installing MSXML 6.0 Parser (x64) SP1..." -ForegroundColor Cyan
                 Wait-Msiexec -MaxWait 5
                 msiexec.exe /i ($InstallerRoot + "\Support\msxml6_x64.msi") /qn
             }
         }
         if (!(Check-Installed -Name 'Microsoft Visual C++ 2015-2019 Redistributable (x86)*')){
-            Write-Host " * Installing Microsoft Visual C++ 2019 Redistributable (x86) - 14.28.29913.0..."
+            Write-Host " * Installing Microsoft Visual C++ 2019 Redistributable (x86) - 14.28.29913.0..." -ForegroundColor Cyan
             Start-Process -FilePath ($InstallerRoot + "\Support\MSVC2019\VC_redist.x86.exe") -ArgumentList "/install /quiet /norestart" -Wait
         }
         if (!(Check-Installed -Name 'Microsoft Visual C++ 2015-2019 Redistributable (x64)*')){
-            Write-Host " * Installing Microsoft Visual C++ 2019 Redistributable (x64) - 14.28.29913.0..."
+            Write-Host " * Installing Microsoft Visual C++ 2019 Redistributable (x64) - 14.28.29913.0..." -ForegroundColor Cyan
             Start-Process -FilePath ($InstallerRoot + "\Support\MSVC2019\VC_redist.x64.exe") -ArgumentList "/install /quiet /norestart" -Wait
         }
         if (!(Check-Installed -Name 'Microsoft Edge WebView2 Runtime')){
-            Write-Host " * Installing Microsoft Edge Web View 2 Runtime (x64)..."
+            Write-Host " * Installing Microsoft Edge Web View 2 Runtime (x64)..." -ForegroundColor Cyan
             Start-Process -FilePath ($InstallerRoot + "\Support\MicrosoftEdgeWebView2RuntimeInstallerX64.exe") -ArgumentList "/silent /install" -Wait
         }
     }
