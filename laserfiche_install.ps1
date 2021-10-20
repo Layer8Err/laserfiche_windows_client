@@ -266,6 +266,11 @@ function Update-Laserfiche () {
                 msiexec.exe /i ($InstallerRoot + "\Support\msxml6_x64.msi") /qn
             }
         }
+        #TODO: Add check and install C++ 2012
+        # ECHO  * Installing Microsoft Visual C++ 2012 Redistributable (x86) - 11.0.61030 ...
+        # vc_redist-2012_x86.exe /q
+        # ECHO  * Installing Microsoft Visual C++ 2012 Redistributable (x64) - 11.0.61030 ...
+        # vc_redist-2012_x64.exe /q
         if (!(Check-Installed -Name 'Microsoft Visual C++ 2015-2019 Redistributable (x86)*')){
             Write-Host " * Installing Microsoft Visual C++ 2019 Redistributable (x86) - 14.28.29913.0..." -ForegroundColor Cyan
             Start-Process -FilePath ($InstallerRoot + "\Support\MSVC2019\VC_redist.x86.exe") -ArgumentList "/install /quiet /norestart" -Wait
