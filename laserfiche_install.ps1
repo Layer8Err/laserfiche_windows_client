@@ -172,6 +172,20 @@ function Install-Laserfiche () {
                 msiexec.exe /i ($InstallerRoot + "\Support\msxml6_x64.msi") /qn
             }
         }
+        if (!(Check-Installed -Name 'Microsoft Visual C++ 2012 Redistributable (x86)*')){
+            Write-Host " * Downloading/Installing Microsoft Visual C++ 2012 Redistributable (x86) - 11.0.61030..." -ForegroundColor Cyan
+            $CPP2012DL86URI = 'https://download.microsoft.com/download/1/6/B/16B06F60-3B20-4FF2-B699-5E9B7962F9AE/VSU_4/vcredist_x86.exe'
+            $CPP2012DL86Path = $InstallerRoot + "\Support\vcredist_x86.exe"
+            (New-Object System.Net.WebClient).DownloadFile($CPP2012DL86URI, $CPP2012DL86Path)
+            Start-Process -FilePath $CPP2012DL86Path -ArgumentList "/q" -Wait
+        }
+        if (!(Check-Installed -Name 'Microsoft Visual C++ 2012 Redistributable (x64)*')){
+            Write-Host " * Downloading/Installing Microsoft Visual C++ 2012 Redistributable (x64) - 11.0.61030..." -ForegroundColor Cyan
+            $CPP2012DL64URI = 'https://download.microsoft.com/download/1/6/B/16B06F60-3B20-4FF2-B699-5E9B7962F9AE/VSU_4/vcredist_x64.exe'
+            $CPP2012DL64Path = $InstallerRoot + "\Support\vcredist_x64.exe"
+            (New-Object System.Net.WebClient).DownloadFile($CPP2012DL64URI, $CPP2012DL64Path)
+            Start-Process -FilePath $CPP2012DL64Path -ArgumentList "/q" -Wait
+        }
         if (!(Check-Installed -Name 'Microsoft Visual C++ 2015-2019 Redistributable (x86)*')){
             Write-Host " * Installing Microsoft Visual C++ 2019 Redistributable (x86) - 14.28.29913.0..." -ForegroundColor Cyan
             Start-Process -FilePath ($InstallerRoot + "\Support\MSVC2019\VC_redist.x86.exe") -ArgumentList "/install /quiet /norestart" -Wait
@@ -266,11 +280,20 @@ function Update-Laserfiche () {
                 msiexec.exe /i ($InstallerRoot + "\Support\msxml6_x64.msi") /qn
             }
         }
-        #TODO: Add check and install C++ 2012
-        # ECHO  * Installing Microsoft Visual C++ 2012 Redistributable (x86) - 11.0.61030 ...
-        # vc_redist-2012_x86.exe /q
-        # ECHO  * Installing Microsoft Visual C++ 2012 Redistributable (x64) - 11.0.61030 ...
-        # vc_redist-2012_x64.exe /q
+        if (!(Check-Installed -Name 'Microsoft Visual C++ 2012 Redistributable (x86)*')){
+            Write-Host " * Downloading/Installing Microsoft Visual C++ 2012 Redistributable (x86) - 11.0.61030..." -ForegroundColor Cyan
+            $CPP2012DL86URI = 'https://download.microsoft.com/download/1/6/B/16B06F60-3B20-4FF2-B699-5E9B7962F9AE/VSU_4/vcredist_x86.exe'
+            $CPP2012DL86Path = $InstallerRoot + "\Support\vcredist_x86.exe"
+            (New-Object System.Net.WebClient).DownloadFile($CPP2012DL86URI, $CPP2012DL86Path)
+            Start-Process -FilePath $CPP2012DL86Path -ArgumentList "/q" -Wait
+        }
+        if (!(Check-Installed -Name 'Microsoft Visual C++ 2012 Redistributable (x64)*')){
+            Write-Host " * Downloading/Installing Microsoft Visual C++ 2012 Redistributable (x64) - 11.0.61030..." -ForegroundColor Cyan
+            $CPP2012DL64URI = 'https://download.microsoft.com/download/1/6/B/16B06F60-3B20-4FF2-B699-5E9B7962F9AE/VSU_4/vcredist_x64.exe'
+            $CPP2012DL64Path = $InstallerRoot + "\Support\vcredist_x64.exe"
+            (New-Object System.Net.WebClient).DownloadFile($CPP2012DL64URI, $CPP2012DL64Path)
+            Start-Process -FilePath $CPP2012DL64Path -ArgumentList "/q" -Wait
+        }
         if (!(Check-Installed -Name 'Microsoft Visual C++ 2015-2019 Redistributable (x86)*')){
             Write-Host " * Installing Microsoft Visual C++ 2019 Redistributable (x86) - 14.28.29913.0..." -ForegroundColor Cyan
             Start-Process -FilePath ($InstallerRoot + "\Support\MSVC2019\VC_redist.x86.exe") -ArgumentList "/install /quiet /norestart" -Wait
